@@ -14,6 +14,8 @@ async function main() {
     // await deployFarmingPool();
     // await setupFarmingPool();
     // await upgradeCCFX();
+
+    await setFarmingPoolReward();
 }
 
 main().catch(console.log);
@@ -81,6 +83,27 @@ async function setupFarmingPool() {
     console.log("Finished");
 } */
 
+async function setFarmingPoolReward() {
+    const farmingPool = await ethers.getContractAt(
+        "FarmingPool",
+        process.env.FARMING_POOL
+    );
+
+    const duration = 3600 * 24 * 365;
+    const amount = 3650000;
+    let tx = await farmingPool.setRewardsDuration(duration);
+    await tx.wait();
+
+    await transferPHX(process.env.FARMING_POOL, amount.toString());
+
+    let tx2 = await farmingPool.setRewardAmount(
+        ethers.utils.parseEther(amount.toString())
+    );
+    await tx2.wait();
+
+    console.log("setFarmingPoolReward finished");
+}
+
 /* async function deployLiquidityPool() {
     const LiquidityPool = await ethers.getContractFactory("LiquidityPool");
     const liquidityPool = await LiquidityPool.deploy();
@@ -135,15 +158,14 @@ async function setupTreasury() {
     console.log("PHXTreasury transfer");
 } */
 
-/* async function transferPHX() {
+async function transferPHX(to, amount) {
     const PHX = await ethers.getContractAt("PHX", process.env.PHX);
     const tx = await PHX.transfer(
-        "0x95eAe134e6878b438CD97e188a2903Ea9Fxxxxxx",
-        ethers.utils.parseEther("1")
+        to,
+        ethers.utils.parseEther(amount.toString())
     );
     await tx.wait();
-    console.log("PHX transfer");
-} */
+}
 
 /* async function deployPHX() {
     const PHX = await ethers.getContractFactory("PHX");

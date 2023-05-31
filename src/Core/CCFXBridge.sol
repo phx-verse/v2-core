@@ -30,7 +30,11 @@ contract CCFXBridge is Ownable, Initializable, SpaceBridge {
     function stakeAbleBalance() public view returns (uint256) {
         uint256 balance = _balance();
         if (balance <= poolAccInterest) return 0;
-        return balance - poolAccInterest;
+        balance -= poolAccInterest;
+        uint256 _needRedeem = eSpacePoolTotalRedeemed();
+        if (balance <= _needRedeem) return 0;
+        balance -= _needRedeem;
+        return balance;
     }
 
     // average hour APR in latest 'aprPeriodCount' period

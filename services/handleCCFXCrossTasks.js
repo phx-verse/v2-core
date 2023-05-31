@@ -69,6 +69,10 @@ async function handleCrossSpaceTask() {
         ) {
             await _handleRedeem(); // do unlock
         }
+
+        if (balance >= totalNeedRedeem) {
+            await _handleRedeem(); // handle redeem
+        }
     }
 
     // step4 Stake votes
