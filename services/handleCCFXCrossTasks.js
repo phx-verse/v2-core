@@ -90,11 +90,15 @@ async function handleCrossSpaceTask() {
 }
 
 async function _handleRedeem() {
-    const receipt = await ccfxBridge
-        .handleRedeem()
-        .sendTransaction({
-            from: account.address,
-        })
-        .executed();
-    logReceipt(receipt, "Handle redeem");
+    try {
+        const receipt = await ccfxBridge
+            .handleRedeem()
+            .sendTransaction({
+                from: account.address,
+            })
+            .executed();
+        logReceipt(receipt, "Handle redeem");
+    } catch (error) {
+        console.error("Handle redeem error: ", error);
+    }
 }
