@@ -10,7 +10,7 @@ import { PHX } from "../PHX.sol";
 import { PHXRate } from "./PHXRate.sol";
 import { VotingEscrow } from "./VotingEscrow.sol";
 
-contract FarmController is Initializable, AccessControl {
+contract FarmingController is Initializable, AccessControl {
     using SafeERC20 for IERC20Metadata;
 
     // Info of each user.

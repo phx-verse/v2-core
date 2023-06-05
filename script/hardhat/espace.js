@@ -8,14 +8,14 @@ async function main() {
     // await deployPHX();
     // await setupTreasury();
     // await transferFromTreasury();
-    // await transferPHX();
+    await transferPHX("0x7deFad05B632Ba2CeF7EA20731021657e20a7596", 3000);
     // await deployCCFX();
     // await setupCCFX();
     // await deployFarmingPool();
     // await setupFarmingPool();
     // await upgradeCCFX();
 
-    await setFarmingPoolReward();
+    // await setFarmingPoolReward();
 }
 
 main().catch(console.log);
@@ -159,6 +159,7 @@ async function setupTreasury() {
 } */
 
 async function transferPHX(to, amount) {
+    console.log(to, amount);
     const PHX = await ethers.getContractAt("PHX", process.env.PHX);
     const tx = await PHX.transfer(
         to,

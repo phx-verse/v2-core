@@ -1,7 +1,20 @@
 const { ethers } = require("hardhat");
 
 async function main() {
-    await playLiquidityPool();
+    const PHXRate = await ethers.getContractFactory("PHXRate");
+    const txData = PHXRate.interface.encodeFunctionData("initialize", [
+        [
+            {
+                startTime: 86401,
+                rate: 1000,
+            },
+            {
+                startTime: 31536001,
+                rate: 0,
+            },
+        ],
+    ]);
+    console.log(txData);
 }
 
 main().catch(console.log);

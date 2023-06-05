@@ -8,7 +8,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     const phxRate = await ethers.getContract("PHXRate");
     const voting = await ethers.getContract("VotingEscrow");
 
-    const Contract = await ethers.getContractFactory("FarmController");
+    const Contract = await ethers.getContractFactory("FarmingController");
     const txData = Contract.interface.encodeFunctionData("initialize", [
         voting.address,
         phxRate.address,
@@ -16,7 +16,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
         parseInt(Date.now() / 1000),
         phx.address, // TODO: use real LP token address
     ]);
-    await deploy("FarmController", {
+    await deploy("FarmingController", {
         from: deployer,
         args: [],
         log: true,
@@ -26,5 +26,5 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
         },
     });
 };
-module.exports.tags = ["FarmController"];
-module.exports.id = "FarmController";
+module.exports.tags = ["FarmingController"];
+module.exports.id = "FarmingController";
