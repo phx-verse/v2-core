@@ -93,9 +93,7 @@ async function calculate(address) {
         return [];
     }
     const redeemQueue = await ccfx.redeemQueue();
-    // console.log(redeemQueue);
     let availableQueue = await estimatedUnlockTimeForCore();
-    // console.log(estimateTime);
     let preTotal = BigInt(0);
     for (let i = 0; i < redeemQueue.length; i++) {
         const redeem = redeemQueue[i];

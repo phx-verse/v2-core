@@ -78,8 +78,6 @@ contract LPFarmingTest is Test {
         assertEq(amount, 1 ether);
         assertEq(unlockTime, _adjustedTime(block.timestamp + 100 days));
 
-        // assertEq(votingEscrow.balanceOf(user2), 1 ether);
-        
         votingEscrow.increaseAmount(user2, 1 ether);
         (amount, unlockTime) = votingEscrow.userInfo(user2);
         assertEq(amount, 2 ether);
@@ -87,6 +85,7 @@ contract LPFarmingTest is Test {
         votingEscrow.increaseUnlockTime(block.timestamp + 200 days);
         (amount, unlockTime) = votingEscrow.userInfo(user2);
         assertEq(unlockTime, _adjustedTime(block.timestamp + 200 days));
+        vm.stopPrank();
     }
 
     function _adjustedTime(uint256 x) internal pure returns (uint256) {

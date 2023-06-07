@@ -49,8 +49,6 @@ contract FarmingController is Initializable, AccessControl {
     uint256 public totalAllocPoint;
     // PHX Rate
     address public phxRate;
-    // reward claimable
-    bool public claimable;
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
@@ -150,6 +148,10 @@ contract FarmingController is Initializable, AccessControl {
         }
     }
 
+    function setPhxRate(address _phxRate) external onlyRole(PHX_ADMIN_ROLE) {
+        phxRate = _phxRate;
+    }
+
     // Update reward variables for all pools. Be careful of gas spending!
     function massUpdatePools() public {
         uint256 length = poolInfo.length;
@@ -162,7 +164,7 @@ contract FarmingController is Initializable, AccessControl {
         _updatePool(_pid);
     }
 
-    // Update reward variables of the given pool to be up-to-date.
+    // Update accRewardPerShare and lastRewardTime of the given pool to be up-to-date.
     function _updatePool(uint256 _pid) internal {
         PoolInfo storage pool = poolInfo[_pid];
         if (block.timestamp <= pool.lastRewardTime) {
@@ -185,6 +187,7 @@ contract FarmingController is Initializable, AccessControl {
         pool.lastRewardTime = block.timestamp;
     }
 
+    // update user rewardPerShare and pendingReward
     function _updateUser(uint256 _pid, address _user)
         internal
         returns (uint256 reward)
@@ -196,15 +199,11 @@ contract FarmingController is Initializable, AccessControl {
                 (pool.accRewardPerShare - user.rewardPerShare)) /
             (10**pool.token.decimals());
         reward += user.pendingReward;
-        if (claimable) {
-            user.pendingReward = 0;
-            phx.mint(_user, reward);
-        } else {
-            user.pendingReward = reward;
-        }
+        user.pendingReward = reward;
         user.rewardPerShare = pool.accRewardPerShare;
     }
 
+    // update working supply of user and pool
     function _checkpoint(uint256 _pid, address _user) internal {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
@@ -264,7 +263,9 @@ contract FarmingController is Initializable, AccessControl {
     }
 
     function claim(uint256 _pid) public {
+        _updatePool(_pid);
         _updateUser(_pid, msg.sender);
+        _checkpoint(_pid, msg.sender);
         UserInfo storage user = userInfo[_pid][msg.sender];
         require(user.pendingReward > 0, "FarmController: no pending reward");
         require(phx.balanceOf(address(this)) >= user.pendingReward, "FarmController: insufficient balance");
@@ -292,7 +293,4 @@ contract FarmingController is Initializable, AccessControl {
     }
 
     /* ==== admin functions ==== */
-    function setClaimable(bool _claimable) external onlyRole(PHX_ADMIN_ROLE) {
-        claimable = _claimable;
-    }
 }
