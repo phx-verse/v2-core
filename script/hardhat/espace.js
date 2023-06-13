@@ -5,20 +5,76 @@ async function main() {
     // await deployLiquidityPool();
     // await setupLiquidityPool();
     // await deployTreasury();
-    // await deployPHX();
     // await setupTreasury();
     // await transferFromTreasury();
-    await transferPHX("0x7deFad05B632Ba2CeF7EA20731021657e20a7596", 3000);
+    // await transferPHX("0x7deFad05B632Ba2CeF7EA20731021657e20a7596", 3000);
     // await deployCCFX();
     // await setupCCFX();
     // await deployFarmingPool();
     // await setupFarmingPool();
     // await upgradeCCFX();
-
     // await setFarmingPoolReward();
+    // await upgradeFarmingController();
+    // await deployPHXRate();
+    // await transferPHX(process.env.FARMING_CONTROLLER, "3650000");
+    // await deployLP();
+    // await setFarmingControllerPhxRate();
+    await transferPHX("0x7deFad05B632Ba2CeF7EA20731021657e20a7596", 1000000);
 }
 
 main().catch(console.log);
+
+async function deployLP() {
+    const Contract = await ethers.getContractFactory("PHX");
+    const contract = await Contract.deploy(process.env.TREASURY);
+    await contract.deployed();
+    console.log("PHX deployed to:", contract.address);
+}
+
+async function deployPHXRate() {
+    const Contract = await ethers.getContractFactory("PHXRate");
+    const contract = await Contract.deploy();
+    await contract.deployed();
+
+    const txData = contract.interface.encodeFunctionData("initialize", [
+        [
+            {
+                startTime: parseInt(Date.now() / 1000) + 60 * 60 * 1,
+                rate: 115740740740740740n, // one year 365w phx
+            },
+            {
+                startTime: parseInt(Date.now() / 1000) + 60 * 60 * 24 * 365,
+                rate: 0n,
+            },
+        ],
+    ]);
+
+    console.log(txData);
+
+    const Proxy1967 = await ethers.getContractFactory("Proxy1967");
+    const proxy = await Proxy1967.deploy(contract.address, txData);
+    await proxy.deployed();
+    console.log("PHXRate deployed to:", proxy.address);
+}
+
+async function setFarmingControllerPhxRate() {
+    const contract = await ethers.getContractAt(
+        "FarmingController",
+        process.env.FARMING_CONTROLLER
+    );
+
+    /* let tx = await contract.setPhxRate(process.env.PHX_RATE);
+    await tx.wait();
+    console.log("setPhxRate done"); */
+
+    let tx = await contract.add(
+        1000,
+        process.env.LP,
+        parseInt(Date.now() / 1000),
+        true
+    );
+    await tx.wait();
+}
 
 /* async function deployCCFX() {
     const CCFX = await ethers.getContractFactory("CCFX");
@@ -53,6 +109,21 @@ async function upgradeCCFX() {
 
     const proxy1967 = await ethers.getContractAt("Proxy1967", process.env.CCFX);
     const tx = await proxy1967.upgradeTo(cCFX.address);
+    await tx.wait();
+    console.log("Finished");
+}
+
+async function upgradeFarmingController() {
+    const Contract = await ethers.getContractFactory("FarmingController");
+    const contract = await Contract.deploy();
+    await contract.deployed();
+    console.log("FARMING_CONTROLLER impl deployed to:", contract.address);
+
+    const proxy1967 = await ethers.getContractAt(
+        "Proxy1967",
+        process.env.FARMING_CONTROLLER
+    );
+    const tx = await proxy1967.upgradeTo(contract.address);
     await tx.wait();
     console.log("Finished");
 }
@@ -145,32 +216,24 @@ async function setupTreasury() {
     console.log("PHXTreasury setup PHX address");
 } */
 
-/* async function transferFromTreasury() {
+async function transferFromTreasury(to, amount) {
     const PHXTreasury = await ethers.getContractAt(
         "PHXTreasury",
         process.env.TREASURY
     );
     const tx = await PHXTreasury.transfer(
-        "0x14273e1953f2d514a6e9f801b9b506a167xxxxxx",
-        ethers.utils.parseEther("700000")
+        to,
+        ethers.utils.parseEther(amount.toString())
     );
     await tx.wait();
     console.log("PHXTreasury transfer");
-} */
+}
 
 async function transferPHX(to, amount) {
-    console.log(to, amount);
-    const PHX = await ethers.getContractAt("PHX", process.env.PHX);
+    const PHX = await ethers.getContractAt("PHX", process.env.LP);
     const tx = await PHX.transfer(
         to,
         ethers.utils.parseEther(amount.toString())
     );
     await tx.wait();
 }
-
-/* async function deployPHX() {
-    const PHX = await ethers.getContractFactory("PHX");
-    const phx = await PHX.deploy(process.env.TREASURY);
-    await phx.deployed();
-    console.log("PHX deployed to:", phx.address);
-} */

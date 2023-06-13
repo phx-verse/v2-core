@@ -291,6 +291,5 @@ contract FarmingController is Initializable, AccessControl {
             "FarmController: user working supply is up-to-date"
         );
     }
-
-    /* ==== admin functions ==== */
+    
 }
