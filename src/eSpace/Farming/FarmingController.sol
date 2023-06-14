@@ -49,6 +49,8 @@ contract FarmingController is Initializable, AccessControl {
     uint256 public totalAllocPoint;
     // PHX Rate
     address public phxRate;
+    // pool names
+    string[] public poolNames;
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
@@ -150,6 +152,17 @@ contract FarmingController is Initializable, AccessControl {
 
     function setPhxRate(address _phxRate) external onlyRole(PHX_ADMIN_ROLE) {
         phxRate = _phxRate;
+    }
+
+    function setPoolName(uint256 _pid, string memory _name)
+        external
+        onlyRole(PHX_ADMIN_ROLE)
+    {
+        if (_pid < poolNames.length) {
+            poolNames[_pid] = _name;
+        } else {
+            poolNames.push(_name);
+        }
     }
 
     // Update reward variables for all pools. Be careful of gas spending!
