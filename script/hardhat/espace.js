@@ -18,18 +18,11 @@ async function main() {
     // await deployPHXRate();
     // await transferPHX(process.env.FARMING_POOL, "3650000");
     // await deployLP();
-    // await setFarmingControllerPhxRate();
-    await transferPHX("0x7173ac63b5Ecb4A4Ad52676bBf7258591D096e29", 1000000);
+    await setFarmingController();
+    // await transferPHX("0x7173ac63b5Ecb4A4Ad52676bBf7258591D096e29", 1000000);
 }
 
 main().catch(console.log);
-
-async function deployLP() {
-    const Contract = await ethers.getContractFactory("PHX");
-    const contract = await Contract.deploy(process.env.TREASURY);
-    await contract.deployed();
-    console.log("PHX deployed to:", contract.address);
-}
 
 async function deployPHXRate() {
     const Contract = await ethers.getContractFactory("PHXRate");
@@ -57,7 +50,7 @@ async function deployPHXRate() {
     console.log("PHXRate deployed to:", proxy.address);
 }
 
-async function setFarmingControllerPhxRate() {
+async function setFarmingController() {
     const contract = await ethers.getContractAt(
         "FarmingController",
         process.env.FARMING_CONTROLLER
