@@ -216,7 +216,7 @@ contract FarmingController is Initializable, AccessControl {
         user.rewardPerShare = pool.accRewardPerShare;
     }
 
-    // update working supply of user and pool
+    // update workingSupply of user and pool
     function _checkpoint(uint256 _pid, address _user) internal {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
@@ -278,7 +278,6 @@ contract FarmingController is Initializable, AccessControl {
     function claim(uint256 _pid) public {
         _updatePool(_pid);
         _updateUser(_pid, msg.sender);
-        _checkpoint(_pid, msg.sender);
         UserInfo storage user = userInfo[_pid][msg.sender];
         require(user.pendingReward > 0, "FarmController: no pending reward");
         require(phx.balanceOf(address(this)) >= user.pendingReward, "FarmController: insufficient balance");
@@ -286,6 +285,13 @@ contract FarmingController is Initializable, AccessControl {
         phx.transfer(address(msg.sender), reward);
         user.pendingReward = 0;
         emit Claim(msg.sender, _pid, reward);
+    }
+
+    function userPendingReward(uint256 _pid) public returns (uint256) {
+        _updatePool(_pid);
+        _updateUser(_pid, msg.sender);
+        UserInfo storage user = userInfo[_pid][msg.sender];
+        return user.pendingReward;
     }
 
     // kick someone from boosting if his/her locked share expired
