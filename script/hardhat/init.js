@@ -24,11 +24,36 @@ function loadPrivateKey() {
     }
 }
 
+async function deployContract(hre, name, value = 0, ...params) {
+    console.log("Start to deploy", name);
+    const [account] = await hre.conflux.getSigners();
+    const Contract = await hre.conflux.getContractFactory(name);
+
+    const deployReceipt = await Contract.constructor(...params)
+        .sendTransaction({
+            from: account.address,
+            value,
+        })
+        .executed();
+
+    if (deployReceipt.outcomeStatus === 0) {
+        console.log(`${name} deployed to:`, deployReceipt.contractCreated);
+        return deployReceipt.contractCreated;
+    } else {
+        console.log(`${name} deploy failed`);
+        return null;
+    }
+}
+
 const account = conflux.wallet.addPrivateKey(loadPrivateKey());
+
+const InitializerSig = "0x8129fc1c";
 
 module.exports = {
     conflux,
     account,
     logReceipt,
     loadPrivateKey,
+    deployContract,
+    InitializerSig,
 };
