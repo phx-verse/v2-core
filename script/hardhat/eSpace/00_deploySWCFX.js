@@ -1,5 +1,5 @@
 const { ethers, upgrades } = require("hardhat");
-const { format, address } = require("js-conflux-sdk");
+const { address } = require("js-conflux-sdk");
 
 async function main() {
     // await deploySWCFX();

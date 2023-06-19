@@ -14,13 +14,12 @@ const ccfxBridge = conflux.Contract({
 });
 
 async function main() {
-    /* let hash = await ccfxBridge.handleFirstRedeem().sendTransaction({
-        from: account.address,
-    });
-
-    console.log("handleFirstRedeem tx hash: ", hash); */
     setInterval(async () => {
-        await handleCrossSpaceTask();
+        try {
+            await handleCrossSpaceTask();
+        } catch (e) {
+            console.error("handleCrossSpaceTask error: ", e);
+        }
     }, 1000 * 60 * 1);
 }
 
@@ -69,6 +68,10 @@ async function handleCrossSpaceTask() {
         ) {
             await _handleRedeem(); // do unlock
         }
+
+        if (balance >= totalNeedRedeem) {
+            await _handleRedeem(); // handle redeem
+        }
     }
 
     // step4 Stake votes
@@ -86,11 +89,15 @@ async function handleCrossSpaceTask() {
 }
 
 async function _handleRedeem() {
-    const receipt = await ccfxBridge
-        .handleRedeem()
-        .sendTransaction({
-            from: account.address,
-        })
-        .executed();
-    logReceipt(receipt, "Handle redeem");
+    try {
+        const receipt = await ccfxBridge
+            .handleRedeem()
+            .sendTransaction({
+                from: account.address,
+            })
+            .executed();
+        logReceipt(receipt, "Handle redeem");
+    } catch (error) {
+        console.error("Handle redeem error: ", error);
+    }
 }

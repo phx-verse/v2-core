@@ -27,10 +27,31 @@ contract CCFXBridge is Ownable, Initializable, SpaceBridge {
         poolShareRatio = ratio;
     }
 
+    function depositPoolInterest() public payable onlyOwner {
+        poolAccInterest += msg.value;
+    }
+
+    function withdrawPoolInterest(uint256 amount) public onlyOwner {
+        require(amount <= poolAccInterest, "CCFXBridge: insufficient pool interest");
+        require(amount <= address(this).balance, "CCFXBridge: insufficient balance");
+        poolAccInterest -= amount;
+        payable(owner()).transfer(amount);
+    }
+
+    function decreaseStake(uint64 votes) public onlyOwner {
+        IPoSPool.UserSummary memory userSummary = poolSummary();
+        require(userSummary.locked >= votes, "CCFXBridge: insufficient votes");
+        posPool.decreaseStake(votes);
+    }
+
     function stakeAbleBalance() public view returns (uint256) {
         uint256 balance = _balance();
         if (balance <= poolAccInterest) return 0;
-        return balance - poolAccInterest;
+        balance -= poolAccInterest;
+        uint256 _needRedeem = eSpacePoolTotalRedeemed();
+        if (balance <= _needRedeem) return 0;
+        balance -= _needRedeem;
+        return balance;
     }
 
     // average hour APR in latest 'aprPeriodCount' period

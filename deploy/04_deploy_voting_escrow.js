@@ -4,13 +4,12 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     const { deploy } = deployments;
     const { deployer } = await getNamedAccounts();
 
-    const phx = await ethers.getContract("PHX");
     const Contract = await ethers.getContractFactory("VotingEscrow");
     const txData = Contract.interface.encodeFunctionData("initialize", [
         "PHXVoting",
         "PHXV",
         18,
-        phx.address,
+        process.env.PHX,
     ]);
     await deploy("VotingEscrow", {
         from: deployer,

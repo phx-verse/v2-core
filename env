@@ -1,0 +1,28 @@
+ESPACE_URL=https://evm.confluxrpc.com
+ESPACE_TESTNET_URL=https://evmtestnet.confluxrpc.com
+
+######## Testnet ===============================================================
+# PRIVATE_KEY=0xe012a49e9df8040d400b4a000000000000000000000000000000000000000000
+
+# RPC_URL=https://test.confluxrpc.com
+# NETWORK_ID=1
+
+# PHX=
+# TREASURY=
+
+# POS_POOL_POS_ADDRESS=
+# POS_POOL_POW_ADDRESS=
+
+# POS_ORACLE=
+
+# CCFX=
+# CCFX_BRIDGE=
+
+# FARMING_POOL=
+
+# PROXY_ADMIN=
+# E_PROXY_ADMIN=
+
+# LIQUIDITY_POOL=
+# SWCFX=
+# SWCFX_BRIDGE=

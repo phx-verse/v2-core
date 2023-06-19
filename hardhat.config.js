@@ -8,6 +8,55 @@ require("dotenv").config();
 const { loadPrivateKey } = require("./script/hardhat/init.js");
 const PRIVATE_KEY = loadPrivateKey();
 
+task("upgrade1967", "Upgrade a ERC1967 contracts")
+    .addParam("contract", "Contract name used to upgrade")
+    .addParam("address", "Contract address to upgrade")
+    .setAction(async (args, hre) => {
+        console.log(`Upgrading ${args.contract} at ${args.address}`);
+        const Contract = await hre.ethers.getContractFactory(args.contract);
+        const contract = await Contract.deploy();
+        await contract.deployed();
+        console.log(`${args.contract} impl deployed to:`, contract.address);
+
+        const proxy1967 = await hre.ethers.getContractAt(
+            "Proxy1967",
+            args.address
+        );
+        const tx = await proxy1967.upgradeTo(contract.address);
+        await tx.wait();
+
+        console.log("Finished");
+    });
+
+task("setLPName", "Set LP name in FarmingController")
+    .addParam("name", "LP name")
+    .addParam("index", "LP index")
+    .setAction(async function (args, hre) {
+        const controller = await hre.ethers.getContractAt(
+            "FarmingController",
+            process.env.FARMING_CONTROLLER
+        );
+        const tx = await controller.setPoolName(
+            parseInt(args.index),
+            args.name
+        );
+        await tx.wait();
+        console.log(`Set LP name "${args.name}" at index ${args.index}`);
+    });
+
+task("transferPHX", "Transfer PHX to address")
+    .addParam("address", "Address to transfer")
+    .addParam("amount", "Amount to transfer")
+    .setAction(async function (args, hre) {
+        const phx = await hre.ethers.getContractAt("PHX", process.env.PHX);
+        const tx = await phx.transfer(
+            args.address,
+            hre.ethers.utils.parseEther(args.amount)
+        );
+        await tx.wait();
+        console.log(`Transfer ${args.amount} PHX to "${args.address}"`);
+    });
+
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
     solidity: "0.8.18",
@@ -55,7 +104,15 @@ module.exports = {
         // runOnCompile: true,
         clear: true,
         flat: true,
-        only: ["CCFX", "IPoSPool"],
+        only: [
+            "CCFX",
+            "IPoSPool",
+            "PHX",
+            "FarmingPool",
+            "FarmingController",
+            "VotingEscrow",
+            "ERC20Metadata",
+        ],
         spacing: 2,
         pretty: true,
         // format: "minimal",
