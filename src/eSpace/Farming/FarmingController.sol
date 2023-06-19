@@ -287,10 +287,10 @@ contract FarmingController is Initializable, AccessControl {
         emit Claim(msg.sender, _pid, reward);
     }
 
-    function userPendingReward(uint256 _pid) public returns (uint256) {
+    function userPendingReward(uint256 _pid, address _user) public returns (uint256) {
         _updatePool(_pid);
-        _updateUser(_pid, msg.sender);
-        UserInfo storage user = userInfo[_pid][msg.sender];
+        _updateUser(_pid, _user);
+        UserInfo storage user = userInfo[_pid][_user];
         return user.pendingReward;
     }
 
