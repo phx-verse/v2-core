@@ -14,13 +14,12 @@ const ccfxBridge = conflux.Contract({
 });
 
 async function main() {
-    /* let hash = await ccfxBridge.handleFirstRedeem().sendTransaction({
-        from: account.address,
-    });
-
-    console.log("handleFirstRedeem tx hash: ", hash); */
     setInterval(async () => {
-        await handleCrossSpaceTask();
+        try {
+            await handleCrossSpaceTask();
+        } catch (e) {
+            console.error("handleCrossSpaceTask error: ", e);
+        }
     }, 1000 * 60 * 1);
 }
 

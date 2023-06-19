@@ -8,9 +8,9 @@ const conflux = new Conflux({
 
 function logReceipt(receipt, msg) {
     console.log(
-        `${msg}: ${receipt.outcomeStatus === 0 ? "Success" : "Fail"} hash-${
-            receipt.transactionHash
-        }`
+        `${new Date().toLocaleString()} ${msg}: ${
+            receipt.outcomeStatus === 0 ? "Success" : "Fail"
+        } hash-${receipt.transactionHash}`
     );
 }
 

@@ -44,6 +44,19 @@ task("setLPName", "Set LP name in FarmingController")
         console.log(`Set LP name "${args.name}" at index ${args.index}`);
     });
 
+task("transferPHX", "Transfer PHX to address")
+    .addParam("address", "Address to transfer")
+    .addParam("amount", "Amount to transfer")
+    .setAction(async function (args, hre) {
+        const phx = await hre.ethers.getContractAt("PHX", process.env.PHX);
+        const tx = await phx.transfer(
+            args.address,
+            hre.ethers.utils.parseEther(args.amount)
+        );
+        await tx.wait();
+        console.log(`Transfer ${args.amount} PHX to "${args.address}"`);
+    });
+
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
     solidity: "0.8.18",
