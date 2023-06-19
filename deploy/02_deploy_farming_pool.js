@@ -14,14 +14,13 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     });
 
     const farmingPool = await ethers.getContract("FarmingPool");
-    const phx = await ethers.getContract("PHX");
     const ccfx = await ethers.getContract("CCFX");
 
     console.log("setting farming_pool phx and ccfx");
     let tx = await farmingPool.setCCFX(ccfx.address);
     await tx.wait();
 
-    tx = await farmingPool.setPHX(phx.address);
+    tx = await farmingPool.setPHX(process.env.PHX);
     await tx.wait();
 
     console.log("setting ccfx farming pool");

@@ -58,8 +58,6 @@ contract VotingEscrow is ReentrancyGuard, Initializable {
         maxTime = 4 * 365 * 86400;
 
         token = IERC20(_token);
-
-        // _addWhitelistAdmin(msg.sender);
     }
 
     // return start timestamp of lastest week

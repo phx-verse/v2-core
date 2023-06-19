@@ -144,13 +144,13 @@ contract CCFX is ERC20PresetMinterPauserUpgradeable {
         farmingPool = IFarmingPool(pool);
     }
 
-    function _transferToBridge() internal {
+    function _transferToBridge() private {
         uint256 _amount = address(this).balance;
         address payable receiver = payable(coreBridge);
         receiver.transfer(_amount);
     }
 
-    function _transferToBridge(uint256 amount) internal {
+    function _transferToBridge(uint256 amount) private {
         uint256 _balance = address(this).balance;
         require(amount <= _balance, "not enough balance");
         address payable receiver = payable(coreBridge);

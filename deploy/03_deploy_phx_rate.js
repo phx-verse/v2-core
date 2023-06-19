@@ -7,12 +7,12 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     const txData = PHXRate.interface.encodeFunctionData("initialize", [
         [
             {
-                startTime: parseInt(Date.now() / 1000) + 60 * 60 * 2,
-                rate: 100,
+                startTime: parseInt(Date.now() / 1000) + 60 * 60 * 1,
+                rate: 115740740740740740n, // one year 365w phx
             },
             {
-                startTime: parseInt(Date.now() / 1000) + 60 * 60 * 4,
-                rate: 0,
+                startTime: parseInt(Date.now() / 1000) + 60 * 60 * 24 * 365,
+                rate: 0n,
             },
         ],
     ]);
