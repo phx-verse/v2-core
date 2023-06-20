@@ -18,7 +18,6 @@ contract CCFX is ERC20PresetMinterPauserUpgradeable {
     bytes32 constant TOKEN_ADMIN_ROLE = keccak256("TOKEN_ADMIN_ROLE");
     uint256 constant RATIO_BASE = 1000_000_000;
 
-    IFarmingPool public farmingPool; // farming pool address
     address public coreBridge; // core bridge mirror address
     
     uint256 public totalAssets; // total assets of CFX in this pool
@@ -140,10 +139,6 @@ contract CCFX is ERC20PresetMinterPauserUpgradeable {
         coreBridge = bridge;
     }
 
-    function setFarmingPool(address pool) public onlyRole(TOKEN_ADMIN_ROLE) {
-        farmingPool = IFarmingPool(pool);
-    }
-
     function _transferToBridge() private {
         uint256 _amount = address(this).balance;
         address payable receiver = payable(coreBridge);
@@ -159,9 +154,6 @@ contract CCFX is ERC20PresetMinterPauserUpgradeable {
 
     function _beforeTokenTransfer(address from, address to, uint256 amount) internal override {
         if (amount > 0) {
-            farmingPool.updateYield(from);
-            farmingPool.updateYield(to);
-            
             _stakers.add(to);
         }
     }

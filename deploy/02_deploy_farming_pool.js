@@ -22,10 +22,6 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
     tx = await farmingPool.setPHX(process.env.PHX);
     await tx.wait();
-
-    console.log("setting ccfx farming pool");
-    tx = await ccfx.setFarmingPool(farmingPool.address);
-    await tx.wait();
 };
 module.exports.tags = ["FarmingPool"];
 module.exports.id = "FarmingPool";
