@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import { ERC20PresetMinterPauser } from "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 import "forge-std/Test.sol";
 import "../src/eSpace/LiquidityPool.sol";
-import "../src/eSpace/SWCFX.sol";
+import "../src/eSpace/SWCFX10.sol";
 import "../src/utils/ProxyAdmin.sol";
 import "../src/utils/TransparentProxy.sol";
 
@@ -12,7 +12,7 @@ contract LiquidityPoolTest is Test {
     ProxyAdmin public admin;
     TransparentUpgradeableProxy public proxy;
     LiquidityPool public lp;
-    SWCFX public swcfx;
+    SWCFX10 public swcfx;
     address public user1 = address(1111);
     address public user2 = address(1112);
     address public fake_swcfx_bridge = address(1113);
@@ -20,10 +20,10 @@ contract LiquidityPoolTest is Test {
     function setUp() public {
         // deploy swcfx
         admin = new ProxyAdmin();
-        SWCFX swcfx_impl = new SWCFX();
+        SWCFX10 swcfx_impl = new SWCFX10();
         bytes memory data = abi.encodeWithSignature("initialize(string,string)", "PoS Wrapped CFX", "sWCFX");
         proxy = new TransparentUpgradeableProxy(address(swcfx_impl), address(admin), data);
-        swcfx = SWCFX(payable(proxy));
+        swcfx = SWCFX10(payable(proxy));
         swcfx.setCoreBridge(fake_swcfx_bridge);
 
         // deploy liquidity pool

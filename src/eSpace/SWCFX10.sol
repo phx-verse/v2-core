@@ -6,16 +6,9 @@ import { ContextUpgradeable } from "@openzeppelin-upgradeable/contracts/utils/Co
 import { WCFX10Upgradeable } from "./WCFX10Upgradeable.sol";
 import { ILiquidityPool } from "../interfaces/ILiquidityPool.sol";
 
-contract SWCFX is ContextUpgradeable, OwnableUpgradeable, WCFX10Upgradeable {
-    // user reward info
-    struct RewardInfo {
-        uint256 rewards;
-        uint256 accRewardPerCfx;
-    }
-
+contract SWCFX10 is ContextUpgradeable, OwnableUpgradeable, WCFX10Upgradeable {
     uint256 constant RATIO_BASE = 10000;
     uint256 public POS_RATIO;
-    uint256 public minimumBar;
 
     address public coreBridge; // core bridge mirror address
     ILiquidityPool public liquidityPool;
@@ -23,16 +16,11 @@ contract SWCFX is ContextUpgradeable, OwnableUpgradeable, WCFX10Upgradeable {
     uint256 public totalInPoS;
     uint256 public totalRedeemed; // total redeemed amount from core space
     uint256 public totalLend; // total lend amount from liquidity pool
-
-    uint256 public accRewardPerCfx;
-    uint256 public lastShotSupply; // last time supply when shot reward
-    mapping(address => RewardInfo) public userRewardInfos;
     
     function initialize(string memory _name, string memory _symbol) public initializer override {
         super.initialize(_name, _symbol);
         __Ownable_init();
         POS_RATIO = 5000;
-        minimumBar = 1000_000 ether;
     }
 
     modifier onlyBridge() {
@@ -41,31 +29,12 @@ contract SWCFX is ContextUpgradeable, OwnableUpgradeable, WCFX10Upgradeable {
     }
 
     function receiveInterest() public onlyBridge payable {
-        if (lastShotSupply == 0 || msg.value == 0) return;
-        accRewardPerCfx += msg.value * 1e18 / lastShotSupply;
-        lastShotSupply = totalSupply();
+        // TODO:
+        // if (lastShotSupply == 0 || msg.value == 0) return;
     }
 
     function receiveLend() public payable {
         totalLend += msg.value;
-    }
-
-    // TODO
-    function APR() public view returns (uint256) {
-        return 600;
-    }
-
-    function userReward() public view returns (uint256) {
-        uint256 _reward = userRewardInfos[msg.sender].rewards;
-        uint256 _sectionReward = balanceOf(msg.sender) * (accRewardPerCfx - userRewardInfos[msg.sender].accRewardPerCfx) / 1e18;
-        return _reward + _sectionReward;
-    }
-
-    function claimReward() public {
-        _updateUserRewards(msg.sender);
-        uint256 _reward = userRewardInfos[msg.sender].rewards;
-        (bool _success,) = msg.sender.call{value: _reward}("");
-        userRewardInfos[msg.sender].rewards = 0;
     }
 
     /**
@@ -108,15 +77,6 @@ contract SWCFX is ContextUpgradeable, OwnableUpgradeable, WCFX10Upgradeable {
         receiver.transfer(_amount);
     }
 
-    function _updateUserRewards(address _user) internal {
-        uint256 _balance = balanceOf(_user);
-        if (_balance == 0 || accRewardPerCfx == userRewardInfos[_user].accRewardPerCfx) return;
-        
-        uint256 _sectionReward = _balance * (accRewardPerCfx - userRewardInfos[_user].accRewardPerCfx) / 1e18;
-        userRewardInfos[_user].rewards += _sectionReward;
-        userRewardInfos[_user].accRewardPerCfx = accRewardPerCfx;
-    }
-
     /**
      * @dev calculate the amount should be locked in or unlock from PoS
      */
@@ -124,12 +84,6 @@ contract SWCFX is ContextUpgradeable, OwnableUpgradeable, WCFX10Upgradeable {
         return _amount * POS_RATIO / RATIO_BASE;
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 amount) internal override {
-        _updateUserRewards(from);
-        _updateUserRewards(to);
-        super._beforeTokenTransfer(from, to, amount);
-    }
-    
     function _deposit(address to, uint256 value) internal override {
         uint256 amount = _calPoSAmount(value);
         _transferToBridge(amount);
