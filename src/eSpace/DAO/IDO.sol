@@ -18,6 +18,10 @@ contract IDO is Ownable {
         phx.transfer(_to, _amount);
     }
 
+    function transferCfx(address _to) public onlyOwner {
+        payable(_to).transfer(address(this).balance);
+    }
+
     receive() external payable {
         uint256 amount = _calAmount(msg.value);
         require(block.number > START_BLOCK, "IDO: not start yet");
