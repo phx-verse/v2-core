@@ -67,7 +67,6 @@ contract DeployCCFX is Script {
         Proxy1967 ccfxProxy = new Proxy1967(address(ccfxImpl), "0x8129fc1c");
         CCFX ccfx = CCFX(address(ccfxProxy));
 
-        ccfx.setFarmingPool(vm.envAddress("FARMING_POOL_ADDR"));
         ccfx.setCoreBridge(vm.envAddress("CORE_BRIDGE_ADDR"));
 
         vm.stopBroadcast();
