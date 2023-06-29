@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 import { ERC20PresetMinterPauserUpgradeable } from "@openzeppelin-upgradeable/contracts/token/ERC20/presets/ERC20PresetMinterPauserUpgradeable.sol";
 import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import { RedeemQueue } from "../utils/RedeemQueue.sol";
-import { IFarmingPool } from "../interfaces/IFarmingPool.sol";
 
 contract CCFX is ERC20PresetMinterPauserUpgradeable {
     using RedeemQueue for RedeemQueue.Queue;
