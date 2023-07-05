@@ -140,6 +140,10 @@ contract CCFXBridge is Ownable, Initializable, SpaceBridge {
         return true;
     }
 
+    function stakerNumber() public view returns (uint256) {
+        return eSpacePoolStakerNumber();
+    }
+
     /////////////// cross space call methods ///////////////
 
     function eSpaceAddAssets(uint256 amount) public onlyOwner {
@@ -162,6 +166,21 @@ contract CCFXBridge is Ownable, Initializable, SpaceBridge {
 
     function eSpacePoolTotalRedeemed() public view returns (uint256) {
         bytes memory num = CROSS_SPACE_CALL.staticCallEVM(_ePoolAddrB20(), abi.encodeWithSignature("totalRedeemedAssets()"));
+        return abi.decode(num, (uint256));
+    }
+
+    function eSpacePoolStakerNumber() public view returns (uint256) {
+        bytes memory num = CROSS_SPACE_CALL.staticCallEVM(_ePoolAddrB20(), abi.encodeWithSignature("stakerNumber()"));
+        return abi.decode(num, (uint256));
+    }
+
+    function eSpacePoolTotalAssets() public view returns (uint256) {
+        bytes memory num = CROSS_SPACE_CALL.staticCallEVM(_ePoolAddrB20(), abi.encodeWithSignature("totalAssets()"));
+        return abi.decode(num, (uint256));
+    }
+
+    function eSpacePoolTotalSupply() public view returns (uint256) {
+        bytes memory num = CROSS_SPACE_CALL.staticCallEVM(_ePoolAddrB20(), abi.encodeWithSignature("totalSupply()"));
         return abi.decode(num, (uint256));
     }
 

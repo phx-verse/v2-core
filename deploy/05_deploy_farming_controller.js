@@ -13,7 +13,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
         phxRate.address,
         process.env.PHX,
         parseInt(Date.now() / 1000),
-        process.env.PHX, // TODO: use real LP token address
+        process.env.LP1,
     ]);
     await deploy("FarmingController", {
         from: deployer,
