@@ -27,7 +27,6 @@ contract CCFXTest is Test {
         CCFX ccfxImpl = new CCFX();
         Proxy1967 p2 = new Proxy1967(address(ccfxImpl), abi.encodeWithSignature("initialize()"));
         ccfx = CCFX(address(p2));
-        ccfx.setFarmingPool(address(farmingPool));
         ccfx.setCoreBridge(fake_ccfx_bridge);
 
         farmingPool.setCCFX(address(ccfx));

@@ -7,6 +7,7 @@ contract IDO is Ownable {
     ERC20 public  phx;
     uint256 public price; // price = phx / cfx
     uint256 constant public RATIO_BASE = 10000;
+    uint256 constant public START_BLOCK = 73960109;
 
     constructor(address _phx) {
         phx = ERC20(_phx);
@@ -17,8 +18,13 @@ contract IDO is Ownable {
         phx.transfer(_to, _amount);
     }
 
+    function transferCfx(address _to) public onlyOwner {
+        payable(_to).transfer(address(this).balance);
+    }
+
     receive() external payable {
         uint256 amount = _calAmount(msg.value);
+        require(block.number > START_BLOCK, "IDO: not start yet");
         require(amount > 0, "IDO: amount is zero");
         require(amount <= 10000 ether, "IDO: amount is too large");
         require(phx.balanceOf(address(this)) >= amount, "IDO: insufficient balance");

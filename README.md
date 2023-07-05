@@ -8,8 +8,8 @@ This project is using [Foundry](https://book.getfoundry.sh/) and [Hardhat](https
 First ensure foundry is installed on your local machine. Then clone the repo and install dependencies:
 
 ```bash
-git clone https://github.com/phx-verse/V2-Core.git
-cd V2-Core && npm install
+git clone https://github.com/phx-verse/v2-core.git
+cd v2-core && npm install
 ```
 
 Compile the contracts with command:
