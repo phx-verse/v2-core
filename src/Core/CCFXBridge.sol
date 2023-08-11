@@ -102,6 +102,12 @@ contract CCFXBridge is Ownable, Initializable, SpaceBridge {
         posPool.increaseStake{value: _vote * CFX_PER_VOTE}(uint64(_vote));
     }
 
+    function unstakeVotes(uint64 _votes) public onlyOwner {
+        IPoSPool.UserSummary memory userSummary = poolSummary();
+        require(userSummary.locked >= _votes, "CCFXBridge: insufficient votes");
+        posPool.decreaseStake(_votes);
+    }
+
     function handleRedeem() public onlyOwner {
         // withdraw unlocked votes
         IPoSPool.UserSummary memory userSummary = poolSummary();
