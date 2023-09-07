@@ -18,7 +18,9 @@ interface IWETH10Upgradeable is IERC20MetadataUpgradeable, IERC3156FlashLenderUp
 
     /// @dev `msg.value` of ETH sent to this contract grants `to` account a matching increase in WETH10 token balance.
     /// Emits {Transfer} event to reflect WETH10 token mint of `msg.value` from `address(0)` to `to` account.
-    function depositTo(address to) external payable;
+    function depositTo(address account) external payable;
+
+    function depositFor(address account) external payable;
 
     /// @dev Burn `value` WETH10 token from caller account and withdraw matching ETH to the same.
     /// Emits {Transfer} event to reflect WETH10 token burn of `value` to `address(0)` from caller account.

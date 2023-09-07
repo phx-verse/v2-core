@@ -2,10 +2,10 @@
 pragma solidity ^0.8.13;
 
 import { OwnableUpgradeable } from "@openzeppelin-upgradeable/contracts/access/OwnableUpgradeable.sol";
-import { ContextUpgradeable } from "@openzeppelin-upgradeable/contracts/utils/ContextUpgradeable.sol";
+// import { ContextUpgradeable } from "@openzeppelin-upgradeable/contracts/utils/ContextUpgradeable.sol";
 import { WCFX10Upgradeable } from "./WCFX10Upgradeable.sol";
 
-contract SWCFX10 is ContextUpgradeable, OwnableUpgradeable, WCFX10Upgradeable {
+contract SWCFX10 is OwnableUpgradeable, WCFX10Upgradeable {
     uint256 constant RATIO_BASE = 10000;
     uint256 public POS_RATIO;
 

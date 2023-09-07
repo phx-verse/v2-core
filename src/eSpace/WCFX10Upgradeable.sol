@@ -36,8 +36,12 @@ contract WCFX10Upgradeable is IWETH10Upgradeable, ERC20PresetMinterPauserUpgrade
         _deposit(_msgSender(), msg.value);
     }
 
-    function depositTo(address to) external payable override {
-        _deposit(to, msg.value);
+    function depositTo(address account) external payable override {
+        _deposit(account, msg.value);
+    }
+
+    function depositFor(address account) external payable override {
+        _deposit(account, msg.value);
     }
 
     function withdraw(uint256 value) external override {
