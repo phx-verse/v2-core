@@ -14,9 +14,9 @@ const { POS_POOL_POW_ADDRESS, POS_POOL_POS_ADDRESS } = process.env;
 async function main() {
     setInterval(async function () {
         await updatePosRewardInfo();
-    }, 1000 * 60 * 31); // 31 minutes
+    }, 1000 * 60 * 15.1); // 15.1 minutes
 
-    setInterval(updatePosAccountInfo, 1000 * 60 * 3.4); // 3.4 minutes
+    setInterval(updatePosAccountInfo, 1000 * 60 * 10.3); // 10.3 minutes
 
     console.log("Start POS Oracle service");
 }
