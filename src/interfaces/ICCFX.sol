@@ -9,10 +9,18 @@ interface ICCFX is IERC20Metadata {
      */
     function deposit() external;
 
+    function redeem(uint256 shares) external;
+
     /**
      * @dev Withdraw CFX from this contract by burning cCFX, need approve first
      */
-    function withdraw(uint256 _amount) external;
+    function withdraw(uint256 amount) external;
+
+    function cfxRatio() external view returns (uint256);
+
+    function userWithdrawableAssets(address user) external view returns (uint256);
+
+    function userRedeemedAssets(address user) external view returns (uint256);
 
     /**
      * @dev Total CFX assets in this contract
