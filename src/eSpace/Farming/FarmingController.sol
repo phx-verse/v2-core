@@ -285,6 +285,7 @@ contract FarmingController is Initializable, AccessControl {
         phx.transfer(address(msg.sender), reward);
         user.pendingReward = 0;
         emit Claim(msg.sender, _pid, reward);
+        _checkpoint(_pid, msg.sender);
     }
 
     function userPendingReward(uint256 _pid, address _user) public returns (uint256) {

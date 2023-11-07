@@ -2,25 +2,32 @@
 pragma solidity ^0.8.13;
 
 import { OwnableUpgradeable } from "@openzeppelin-upgradeable/contracts/access/OwnableUpgradeable.sol";
-import { ContextUpgradeable } from "@openzeppelin-upgradeable/contracts/utils/ContextUpgradeable.sol";
 import { WCFX10Upgradeable } from "./WCFX10Upgradeable.sol";
-import { ILiquidityPool } from "../interfaces/ILiquidityPool.sol";
 
-contract SWCFX10 is ContextUpgradeable, OwnableUpgradeable, WCFX10Upgradeable {
-    uint256 constant RATIO_BASE = 10000;
+/*
+    todo
+    1. APR
+*/ 
+contract SWCFX10 is OwnableUpgradeable, WCFX10Upgradeable {
+    uint256 constant RATIO_BASE = 1000_000;
     uint256 public POS_RATIO;
 
     address public coreBridge; // core bridge mirror address
-    ILiquidityPool public liquidityPool;
 
     uint256 public totalInPoS;
-    uint256 public totalRedeemed; // total redeemed amount from core space
-    uint256 public totalLend; // total lend amount from liquidity pool
+    uint256 public totalInterest;
+
+     // Sum of (reward * 1e18 / total supply)
+    uint256 public rewardPerToken;
+    // User address => rewardPerTokenStored
+    mapping(address => uint256) public userRewardPerTokenPaid;
+    // User address => rewards to be claimed
+    mapping(address => uint256) public rewards;
     
     function initialize(string memory _name, string memory _symbol) public initializer override {
         super.initialize(_name, _symbol);
         __Ownable_init();
-        POS_RATIO = 5000;
+        POS_RATIO = 300_000; // 30 percent
     }
 
     modifier onlyBridge() {
@@ -28,46 +35,33 @@ contract SWCFX10 is ContextUpgradeable, OwnableUpgradeable, WCFX10Upgradeable {
         _;
     }
 
-    function receiveInterest() public onlyBridge payable {
-        // TODO:
-        // if (lastShotSupply == 0 || msg.value == 0) return;
-    }
-
-    function receiveLend() public payable {
-        totalLend += msg.value;
-    }
-
     /**
      * @dev called by core bridge to cross CFX back
      */
     function handleRedeem() public onlyBridge payable {
-        totalRedeemed -= msg.value;
         totalInPoS -= msg.value;
+    }
 
-        // pay back to liquidity pool
-        if (totalLend == 0) return;
+    function receiveInterest() public onlyBridge payable {
+        totalInterest += msg.value;
 
-        if (msg.value >= totalLend) {
-            liquidityPool.repayForSWCFX{value: totalLend}();
-            _burn(address(this), totalLend);
-            totalLend = 0;
-        } else {
-            liquidityPool.repayForSWCFX{value: msg.value}();
-            _burn(address(this), msg.value);
-            totalLend -= msg.value;
-        }
+        rewardPerToken += msg.value * 1e18 / totalSupply();
     }
 
     function setCoreBridge(address _bridge) public onlyOwner {
         coreBridge = _bridge;
     }
 
-    function setLiquidPool(address _pool) public onlyOwner {
-        liquidityPool = ILiquidityPool(_pool);
-    }
-
     function setPoSRatio(uint256 _ratio) public onlyOwner {
         POS_RATIO = _ratio;
+    }
+
+    function claimReward() public {
+        _updateUserReward(msg.sender);
+        address payable receiver = payable(msg.sender);
+        uint256 reward = rewards[msg.sender];
+        rewards[msg.sender] = 0;
+        receiver.transfer(reward);
     }
 
     function _transferToBridge(uint256 _amount) internal {
@@ -84,10 +78,24 @@ contract SWCFX10 is ContextUpgradeable, OwnableUpgradeable, WCFX10Upgradeable {
         return _amount * POS_RATIO / RATIO_BASE;
     }
 
+    function _updateUserReward(address user) internal {
+        if (user == address(0x0) || balanceOf(user) == 0) return;
+        rewards[user] += (rewardPerToken - userRewardPerTokenPaid[user]) * balanceOf(user) / 1e18;
+        userRewardPerTokenPaid[user] = rewardPerToken;
+    }
+
+    function _beforeTokenTransfer(address from, address to, uint256 amount) internal override {
+        _updateUserReward(from);
+        _updateUserReward(to);
+    }
+
     function _deposit(address to, uint256 value) internal override {
-        uint256 amount = _calPoSAmount(value);
-        _transferToBridge(amount);
-        totalInPoS += amount;
+        // when total supply surpass a value, specific proportion of value will transfer to bridge address
+        if (totalSupply() > 1000_000 ether) { 
+            uint256 _amount = _calPoSAmount(value);
+            totalInPoS += _amount;
+            _transferToBridge(_amount);
+        }
         super._deposit(to, value);
     }
 
@@ -96,25 +104,8 @@ contract SWCFX10 is ContextUpgradeable, OwnableUpgradeable, WCFX10Upgradeable {
         uint256 _balance = address(this).balance;
         if (_balance >= value) {
             super._withdraw(from, to, value);
-            totalRedeemed += _calPoSAmount(value);
         } else {
-            if (liquidityPool.totalLiquidity() + _balance >= value) {
-                uint256 _toLend = value - _balance;
-                
-                _transfer(from, address(this), _toLend);
-                _approve(address(this), address(liquidityPool), _toLend);
-                liquidityPool.lendBySWCFX(_toLend);
-                
-                totalRedeemed += _calPoSAmount(value);
-                // burn payable part
-                _burn(from, _balance);
-                (bool success,) = to.call{value: value}("");
-                require(success, "sWCFX: CFX transfer failed");
-                emit Withdrawal(from, value);
-            } else {
-                revert("not enough balance, wait a while and try again");
-            }
+            revert("not enough balance, wait a while and try again");
         }
     }
-    
 }

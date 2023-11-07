@@ -30,8 +30,6 @@ contract LiquidityPoolTest is Test {
         lp = new LiquidityPool();
         lp.setSWCFX(address(swcfx));
 
-        swcfx.setLiquidPool(address(lp));
-
         vm.deal(user1, 1000_000_000 ether);
         vm.deal(user2, 1000_000_000 ether);
     }
@@ -65,11 +63,9 @@ contract LiquidityPoolTest is Test {
         vm.stopPrank();
 
         vm.startPrank(fake_swcfx_bridge);
-        assertEq(swcfx.totalLend(), 5000 ether);
         assertEq(swcfx.balanceOf(address(lp)), 5000 ether);
         assertEq(fake_swcfx_bridge.balance, 5000 ether);
         swcfx.handleRedeem{value: 5000 ether}();
-        assertEq(swcfx.totalLend(), 0 ether);
         assertEq(swcfx.balanceOf(address(lp)), 0 ether);
         vm.stopPrank();
     }

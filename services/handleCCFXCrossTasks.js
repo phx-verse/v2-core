@@ -57,6 +57,8 @@ async function handleCrossSpaceTask() {
 
         if (summary.unlocked > 0) {
             await _handleRedeem(); // do withdraw
+            // update summary
+            summary = await ccfxBridge.poolSummary();
         }
 
         let balance = await conflux.cfx.getBalance(CCFX_BRIDGE);
@@ -72,12 +74,39 @@ async function handleCrossSpaceTask() {
         if (balance >= totalNeedRedeem) {
             await _handleRedeem(); // handle redeem
         }
+    } else {
+        let summary = await ccfxBridge.poolSummary();
+        if (summary.unlocked > 0) {
+            await _handleRedeem(); // do withdraw
+            // update summary
+            summary = await ccfxBridge.poolSummary();
+        }
+        // do unstake when no redeem task to refund liquid pool
+        let balance = await conflux.cfx.getBalance(CCFX_BRIDGE);
+        let accInterest = await ccfxBridge.poolAccInterest();
+        if (accInterest > balance) {
+            let unlocking =
+                summary.votes - summary.available - summary.unlocked;
+            if (accInterest > balance + unlocking * ONE_VOTE_CFX) {
+                let toUnlock = accInterest - balance - unlocking * ONE_VOTE_CFX;
+                let toUnlockVote = toUnlock / ONE_VOTE_CFX;
+                if (toUnlock > toUnlockVote * ONE_VOTE_CFX) toUnlockVote += 1n;
+                if (toUnlockVote > 0) {
+                    const receipt = await ccfxBridge
+                        .unstakeVotes(toUnlockVote)
+                        .sendTransaction({
+                            from: account.address,
+                        })
+                        .executed();
+                    logReceipt(receipt, "Unstake votes");
+                }
+            }
+        }
     }
 
     // step4 Stake votes
     const stakeAbleBalance = await ccfxBridge.stakeAbleBalance();
-    const totalNeedRedeem = await ccfxBridge.eSpacePoolTotalRedeemed();
-    if (stakeAbleBalance - totalNeedRedeem > ONE_VOTE_CFX) {
+    if (stakeAbleBalance > ONE_VOTE_CFX) {
         const receipt = await ccfxBridge
             .stakeVotes()
             .sendTransaction({

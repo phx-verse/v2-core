@@ -10,12 +10,14 @@ const swcfxBridge = conflux.Contract({
 });
 
 async function main() {
-    setInterval(handleTasks, 1000 * 60 * 5);
+    const ratioBase = await swcfxBridge.eSpaceRatioBase();
+    const posRatio = await swcfxBridge.eSpacePoSRatio();
+    setInterval(() => handleTasks(ratioBase, posRatio), 1000 * 60 * 5);
 }
 
 main().catch(console.log);
 
-async function handleTasks() {
+async function handleTasks(ratioBase, posRatio) {
     let interest = await swcfxBridge.poolInterest();
     if (interest > 0) {
         let tx = await swcfxBridge.claimInterest().sendTransaction({
@@ -34,15 +36,25 @@ async function handleTasks() {
         console.log("Cross from eSpace");
     }
 
-    let redeemed = await swcfxBridge.eSpaceTotalRedeemed();
-    if (redeemed > 0) {
-        let tx = await swcfxBridge.handleRedeem().sendTransaction({
+    // calculate need redeem amount
+    const totalSupply = await swcfxBridge.eSpaceTotalSupply();
+    const inPos = await swcfxBridge.eSpaceTotalInPoS();
+    const needRedeem = 0;
+    if (inPos > 0) {
+        const should =
+            ((totalSupply - BigInt(1000_000) * BigInt(1e18)) * posRatio) /
+            ratioBase;
+        needRedeem = inPos - should;
+    }
+    if (needRedeem > 0) {
+        let tx = await swcfxBridge.handleRedeem(needRedeem).sendTransaction({
             from: account.address,
         });
         await tx.executed();
         console.log("Handle redeem");
     }
 
+    // state vote
     let balance = await conflux.cfx.getBalance(process.env.SWCFX_BRIDGE);
     if (balance > Drip.fromCFX(1000)) {
         let tx = await swcfxBridge.stakeVotes().sendTransaction({

@@ -24,45 +24,64 @@ contract SWCFXBridge is Ownable, Initializable, SpaceBridge {
         eSpaceSendInterest(interest);
     }
 
-    function handleRedeem() public onlyOwner {
+    // @param
+    // redeemed: the amount need redeemed
+    function handleRedeem(uint256 redeemed) public onlyOwner {
+        require(redeemed > 0, "no need redeem");
         IPoSPool.UserSummary memory userSummary = poolSummary();
         if (userSummary.unlocked > 0) {
             posPool.withdrawStake(userSummary.unlocked);
+            userSummary.unlocked = 0;
         }
 
-        uint256 _totalRedeemed = eSpaceTotalRedeemed();
-        if (_totalRedeemed == 0) return;
         uint256 _balanceBeforeHandle = _balance();
-        if (_balanceBeforeHandle >= _totalRedeemed) {
-            eSpaceHandleRedeem(_totalRedeemed);
+        if (_balanceBeforeHandle >= redeemed) {
+            eSpaceHandleRedeem(redeemed);
             return;
         } else if (_balanceBeforeHandle > 0) {
             eSpaceHandleRedeem(_balanceBeforeHandle);
         }
 
-        uint256 _left = _totalRedeemed - _balanceBeforeHandle;
+        uint256 _left = redeemed - _balanceBeforeHandle;
         uint256 unlocking = userSummary.votes - userSummary.available - userSummary.unlocked;
         if (unlocking * CFX_PER_VOTE >= _left) return;
 
         uint256 _need = (_left - unlocking * CFX_PER_VOTE) / CFX_PER_VOTE;
         if ((_need + unlocking) * CFX_PER_VOTE < _left) _need += 1;
         if (_need > userSummary.locked) _need = userSummary.locked;
+        if (_need == 0) return; // locked is 0
 
         posPool.decreaseStake(uint64(_need));
     }
 
     /////////////// cross space call methods ///////////////
-    function eSpaceTotalRedeemed() public view returns (uint256) {
-        bytes memory num = CROSS_SPACE_CALL.staticCallEVM(_ePoolAddrB20(), abi.encodeWithSignature("totalRedeemed()"));
-        return abi.decode(num, (uint256));
-    }
 
-    function eSpaceHandleRedeem(uint256 _amount) public onlyOwner {
+    function eSpaceHandleRedeem(uint256 _amount) internal {
         CROSS_SPACE_CALL.callEVM{value: _amount}(_ePoolAddrB20(), abi.encodeWithSignature("handleRedeem()"));
     }
 
-    function eSpaceSendInterest(uint256 _amount) public onlyOwner {
+    function eSpaceSendInterest(uint256 _amount) internal {
         CROSS_SPACE_CALL.callEVM{value: _amount}(_ePoolAddrB20(), abi.encodeWithSignature("receiveInterest()"));
+    }
+
+    function eSpaceTotalSupply() public returns (uint256) {
+        bytes memory num = CROSS_SPACE_CALL.callEVM(_ePoolAddrB20(), abi.encodeWithSignature("totalSupply()"));
+        return abi.decode(num, (uint256));
+    }
+
+    function eSpaceTotalInPoS() public returns (uint256) {
+        bytes memory num = CROSS_SPACE_CALL.callEVM(_ePoolAddrB20(), abi.encodeWithSignature("totalInPoS()"));
+        return abi.decode(num, (uint256));
+    }
+
+    function eSpaceRatioBase() public returns (uint256) {
+        bytes memory num = CROSS_SPACE_CALL.callEVM(_ePoolAddrB20(), abi.encodeWithSignature("RATIO_BASE()"));
+        return abi.decode(num, (uint256));
+    }
+
+    function eSpacePoSRatio() public returns (uint256) {
+        bytes memory num = CROSS_SPACE_CALL.callEVM(_ePoolAddrB20(), abi.encodeWithSignature("POS_RATIO()"));
+        return abi.decode(num, (uint256));
     }
 
     // fallback() external payable {}
