@@ -1,4 +1,5 @@
 const { conflux, account } = require("../script/hardhat/init.js");
+const { format } = require("js-conflux-sdk");
 const {
     abi,
     bytecode,
@@ -37,9 +38,7 @@ async function updatePosRewardInfo(epoch) {
         if (!rewardInfo || !rewardInfo.accountRewards) return;
         const { accountRewards } = rewardInfo;
         let target = accountRewards.find(
-            (r) =>
-                r.powAddress.toLowerCase() ===
-                POS_POOL_POW_ADDRESS.toLowerCase()
+            (r) => format.address(r.powAddress) === POS_POOL_POW_ADDRESS
         );
         if (!target) {
             console.log(`No reward info for ${POS_POOL_POW_ADDRESS}`);
