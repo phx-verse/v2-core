@@ -16,7 +16,9 @@ async function main() {
         await updatePosRewardInfo();
     }, 1000 * 60 * 15.1); // 15.1 minutes
 
-    setInterval(updatePosAccountInfo, 1000 * 60 * 10.3); // 10.3 minutes
+    setInterval(async function () {
+        await updateUserVotes();
+    }, 1000 * 60 * 10.3); // 10.3 minutes
 
     console.log("Start POS Oracle service");
 }
@@ -99,5 +101,27 @@ async function updatePosAccountInfo() {
         console.log(new Date(), "updatePosAccountInfo:", receipt.outcomeStatus); // OP log
     } catch (e) {
         console.error("updatePosAccountInfo", e);
+    }
+}
+
+async function updateUserVotes() {
+    try {
+        const status = await conflux.pos.getStatus();
+        const accountInfo = await conflux.pos.getAccount(POS_POOL_POS_ADDRESS);
+        if (!accountInfo) return;
+        const {
+            address,
+            status: { availableVotes },
+        } = accountInfo;
+        const receipt = await oracle
+            .updateUserVotes(status.epoch, address, availableVotes)
+            .sendTransaction({
+                from: account.address,
+            })
+            .executed();
+
+        console.log(new Date(), "updateUserVotes:", receipt.outcomeStatus); // OP log
+    } catch (e) {
+        console.error("updateUserVotes failed", e);
     }
 }

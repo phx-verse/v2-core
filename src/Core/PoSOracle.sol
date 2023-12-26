@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.13;
 
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { ConfluxContext } from "@confluxfans/contracts/InternalContracts/ConfluxContext.sol";
-import { PoSRegister } from "@confluxfans/contracts/InternalContracts/PoSRegister.sol";
-import { IPoSOracle } from "../interfaces/IPoSOracle.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ConfluxContext} from "@confluxfans/contracts/InternalContracts/ConfluxContext.sol";
+import {PoSRegister} from "@confluxfans/contracts/InternalContracts/PoSRegister.sol";
+import {IPoSOracle} from "../interfaces/IPoSOracle.sol";
 
 contract PoSOracle is Ownable, IPoSOracle {
     ConfluxContext constant CFX_CONTEXT = ConfluxContext(0x0888000000000000000000000000000000000004);
@@ -69,7 +69,7 @@ contract PoSOracle is Ownable, IPoSOracle {
         updatePoSEpochHeight(epochNumber);
     }
 
-    function updatePoSRewardInfo(uint256 epoch, address powAddress,  bytes32 posAddress, uint256 reward)
+    function updatePoSRewardInfo(uint256 epoch, address powAddress, bytes32 posAddress, uint256 reward)
         public
         onlyOwner
     {
@@ -80,6 +80,12 @@ contract PoSOracle is Ownable, IPoSOracle {
 
     function updatePoSEpochHeight(uint256 latestPoSEpochHeight) public onlyOwner {
         posEpochHeight = latestPoSEpochHeight;
+    }
+
+    function updateUserVotes(uint256 epoch, address powAddr, uint256 availableVotes) public onlyOwner {
+        _userVoteInfos[epoch][powAddr] = availableVotes;
+        // update posEpochHeight
+        updatePoSEpochHeight(epoch);
     }
 
     function getPoSAccountInfo(bytes32 posAddr) public view returns (IPoSOracle.PoSAccountInfo memory) {
@@ -110,7 +116,7 @@ contract PoSOracle is Ownable, IPoSOracle {
 
     /**
      * @dev get pow epoch number
-    */
+     */
     function powEpochNumber() public view returns (uint256) {
         return CFX_CONTEXT.epochNumber();
     }
