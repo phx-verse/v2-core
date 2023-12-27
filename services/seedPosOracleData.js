@@ -109,11 +109,10 @@ async function updateUserVotes() {
         const accountInfo = await conflux.pos.getAccount(POS_POOL_POS_ADDRESS);
         if (!accountInfo) return;
         const {
-            address,
             status: { availableVotes },
         } = accountInfo;
         const receipt = await oracle
-            .updateUserVotes(status.epoch, address, availableVotes)
+            .updateUserVotes(status.epoch, POS_POOL_POW_ADDRESS, availableVotes)
             .sendTransaction({
                 from: account.address,
             })
